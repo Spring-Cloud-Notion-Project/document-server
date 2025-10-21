@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import ufrn.imd.document_server.dto.DocumentDTO;
 import ufrn.imd.document_server.models.DocumentEntity;
 import ufrn.imd.document_server.services.DocumentService;
 
@@ -23,28 +26,18 @@ public class DocumentFunctions {
     }
 
     @Bean
-    public Function<String, ResponseEntity<DocumentEntity>> createdocument(){
-
-        return text -> {
-            DocumentEntity document = null;
-            try {
-                document = documentService.createAndSave(text);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            return ResponseEntity.ok().body(document);
-        };
+    public Function<Mono<String>, Mono<DocumentDTO>> createdocument(){
+        return text -> text.flatMap(content -> documentService.createAndSave(content));
     }
 
     @Bean
-    public Supplier<List<DocumentEntity>> getalldocuments(){
+    public Supplier<Flux<DocumentDTO>> getalldocuments(){
         return() -> documentService.getAllDocuments();
     }
 
     @Bean
-    public Function<Long, DocumentEntity> getdocumentbyid(){
-        return id -> documentService.findById(id);
+    public Function<Mono<Long>, Mono<DocumentDTO>> getdocumentbyid(){
+        return monoId -> monoId.flatMap(id-> documentService.findById(id));
     }
 }
 

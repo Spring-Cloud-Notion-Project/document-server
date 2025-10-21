@@ -8,6 +8,11 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import ufrn.imd.document_server.dto.DocumentDTO;
+import ufrn.imd.document_server.mappers.DocumentMapper;
 import ufrn.imd.document_server.models.DocumentEntity;
 import ufrn.imd.document_server.repositories.DocumentRepository;
 
@@ -20,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DocumentService {
@@ -33,30 +39,30 @@ public class DocumentService {
         this.documentRepository = documentRepository;
     }
 
-    public DocumentEntity createAndSave(String text) throws IOException {
-        byte[] pdfDocument = generatePdf(text);
+    public Mono<DocumentDTO> createAndSave(String text) {
+        return Mono.fromCallable(() -> {
+                    byte[] pdfDocument = generatePdf(text);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS");
-        LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS");
+                    LocalDateTime now = LocalDateTime.now();
 
-        String name = "doc_" + now.format(formatter) + ".pdf";
+                    String name = "doc_" + now.format(formatter) + ".pdf";
 
-        Path directoryPath = Paths.get(ROOT_DIRECTORY);
-        Files.createDirectories(directoryPath);
+                    Path directoryPath = Paths.get(ROOT_DIRECTORY);
+                    Files.createDirectories(directoryPath);
 
-        Path fullPath = directoryPath.resolve(name);
+                    Path fullPath = directoryPath.resolve(name);
+                    Files.write(fullPath, pdfDocument);
 
-        try {
-            Files.write(fullPath, pdfDocument);
-        } catch (IOException e){
-            throw new IOException("Falha ao salvar o arquivo no disco.", e);
-        }
+                    DocumentEntity document = new DocumentEntity();
+                    document.setName(name);
+                    document.setFullPath(fullPath.toString());
 
-        DocumentEntity document = new DocumentEntity();
-        document.setName(name);
-        document.setFullPath(fullPath.toString());
-
-        return documentRepository.save(document);
+                    return document;
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(documentRepository::save)
+                .map(DocumentMapper::toDto);
     }
 
     private static byte[] generatePdf(String text) {
@@ -125,12 +131,11 @@ public class DocumentService {
         }
     }
 
-    public List<DocumentEntity> getAllDocuments() {
-        return documentRepository.findAll();
+    public Flux<DocumentDTO> getAllDocuments() {
+        return documentRepository.findAll().map(DocumentMapper::toDto);
     }
 
-    public DocumentEntity findById(long id) {
-        return documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Documento não encontrado"));
+    public Mono<DocumentDTO> findById(long id) {
+        return documentRepository.findById(id).map(DocumentMapper::toDto);
     }
 }

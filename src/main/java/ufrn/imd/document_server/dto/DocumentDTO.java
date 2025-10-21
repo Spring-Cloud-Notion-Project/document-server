@@ -1,19 +1,23 @@
-package ufrn.imd.document_server.models;
+package ufrn.imd.document_server.dto;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+public class DocumentDTO {
 
-
-@Table("documents")
-public class DocumentEntity {
-
-    @Id
     private Long id;
-
     private String name;
-
     private String fullPath;
 
+    // Construtor padrão (opcional, mas boa prática)
+    public DocumentDTO() {
+    }
+
+    // Construtor com todos os campos (opcional, mas útil)
+    public DocumentDTO(Long id, String name, String fullPath) {
+        this.id = id;
+        this.name = name;
+        this.fullPath = fullPath;
+    }
+
+    // Getters e Setters
     public Long getId() {
         return id;
     }
