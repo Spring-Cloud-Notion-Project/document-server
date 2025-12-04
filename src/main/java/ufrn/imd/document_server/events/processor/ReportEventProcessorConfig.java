@@ -25,7 +25,7 @@ public class ReportEventProcessorConfig {
     }
 
     @Bean
-    public Function<Flux<ReportEvent.ReportContentGenerated>, Flux<Message<ReportEvent>>> processor() {
+    public Function<Flux<ReportEvent.CreateReportDocument>, Flux<Message<ReportEvent>>> processor() {
         return flux -> flux.flatMap(eventProcessor::process).doOnNext(r -> log.info("Processed event: {}", r))
                 .map(this::toMessage);
     }

@@ -52,7 +52,7 @@ public class DocumentService {
                     Files.createDirectories(directoryPath);
 
                     Path fullPath = directoryPath.resolve(name);
-                    Files.write(fullPath, pdfDocument);
+                    //Files.write(fullPath, pdfDocument);
 
                     DocumentEntity document = new DocumentEntity();
                     document.setName(name);

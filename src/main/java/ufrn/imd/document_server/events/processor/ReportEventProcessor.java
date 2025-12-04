@@ -9,10 +9,10 @@ public interface ReportEventProcessor<R extends DomainEvent> extends EventProces
     @Override
     default Mono<R> process(ReportEvent event) {
         return switch (event){
-            case ReportEvent.ReportContentGenerated e -> this.handle(e);
+            case ReportEvent.CreateReportDocument e -> this.handle(e);
             default -> throw new IllegalStateException("Unexpected value: " + event);
         };
     }
 
-    Mono<R> handle(ReportEvent.ReportContentGenerated event);
+    Mono<R> handle(ReportEvent.CreateReportDocument event);
 }

@@ -19,7 +19,7 @@ public class ReportEventProcessorImpl implements ReportEventProcessor<ReportEven
     }
 
     @Override
-    public Mono<ReportEvent> handle(ReportEvent.ReportContentGenerated event) {
+    public Mono<ReportEvent> handle(ReportEvent.CreateReportDocument event) {
         return documentService.createAndSave(event.content())
                 .map(doc -> (ReportEvent) new ReportEvent.DocumentCreated(event.reportId(), doc.getFullPath()))
                 .onErrorResume(e -> {

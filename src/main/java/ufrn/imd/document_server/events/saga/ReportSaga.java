@@ -2,6 +2,6 @@ package ufrn.imd.document_server.events.saga;
 
 import java.util.UUID;
 
-public interface ReportSaga extends Saga {
+public interface ReportSaga {
     UUID reportId();
 }
