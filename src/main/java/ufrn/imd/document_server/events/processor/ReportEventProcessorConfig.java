@@ -39,6 +39,7 @@ public class ReportEventProcessorConfig {
 
         return MessageBuilder.withPayload(event)
                 .setHeader(KafkaHeaders.KEY, event.reportId().toString())
+                .setHeader("reportId", event.reportId().toString())
                 .setHeader("type", event.getClass().getSimpleName())
                 .setHeader("spring.cloud.stream.sendto.destination", destination)
                 .build();
